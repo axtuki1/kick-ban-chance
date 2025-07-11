@@ -35,4 +35,11 @@ jobs:
           PASSWORD: ${{ secrets.PASSWORD }}
           TWOFACTOR: ${{ secrets.TWOFACTOR }}
           LOGLEVEL: ${{ env.LOGLEVEL }}
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}  # Discord Webhook URL
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          GROUP_ID: ${{ env.GROUP_ID }}
+          REQUIRED_PLAYER_COUNT: ${{ env.REQUIRED_PLAYER_COUNT }}
+          KICK_CHANCE_PERCENT: ${{ env.KICK_CHANCE_PERCENT }}
+          BAN_CHANCE_PERCENT: ${{ env.BAN_CHANCE_PERCENT }}
+          
+
+
