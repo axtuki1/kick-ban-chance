@@ -295,6 +295,8 @@ export class VRChat {
         try {
             this.logger.debug("getting group members info");
             const url = "https://api.vrchat.cloud/api/1/groups/<groupId>/members?n=<length>&offset=<offset>".replace("<groupId>", groupid).replace("<length>", length.toString()).replace("<offset>", offset.toString()) + (sort ? "&sort=" + sort : "");
+
+            this.logger.debug("Request URL: " + url);
             
             const response = await fetch(url, {
                 method: "GET",

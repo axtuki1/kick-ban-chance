@@ -80,7 +80,7 @@ const Main = async () => {
             })
         }));
 
-        logger.info(`Retrieved ${members.length} members from group ${groupId}.`);
+        logger.info(`Retrieved ${members_origin.length} members from group ${groupId}.`);
 
         // 除外するユーザーIDのリスト
         const excludeUserIds = (process.env.EXCLUDE_USER_ID || "").split("\n").map(id => id.trim()).filter(id => id !== "");
