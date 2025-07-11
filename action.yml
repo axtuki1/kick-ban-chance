@@ -1,0 +1,12 @@
+name: "Kick BAN Chance"
+description: "VRChatグループメンバーを抽選でkickしたりBANしたりする"
+author: "axtuki1"
+
+inputs: {}
+outputs:
+  result:
+    description: "抽選の結果（JSON）"
+
+runs:
+  using: "node20"
+  main: "dist/index.js"  # 後でビルドファイルがここにできる想定
