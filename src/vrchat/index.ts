@@ -188,7 +188,7 @@ export class VRChat {
                     }
                 }
 
-                this.logger.warn("TwoFactorAuth failed: " + otpType + " / " + token);
+                this.logger.warn("TwoFactorAuth failed: " + otpType + " / " + token + " [" + response.status + " " + response.statusText + "] " + JSON.stringify(await response.json()));
             } catch (e) {
                 this.logger.error("TwoFactorAuth failed: " + e);
             }

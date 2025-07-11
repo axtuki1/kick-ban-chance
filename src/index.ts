@@ -70,22 +70,18 @@ const Main = async () => {
 
         const members_origin = await vrchat.GetGroupMembers(groupId, 100, 0, "joinedAt:asc");
 
-        logger.debug(JSON.stringify(members_origin, null, 2));
-
-        // { userId: string, displayName: string, joinedAt: string } の形式でメンバー情報を整形
+        // { userId: string, joinedAt: string } の形式でメンバー情報を整形
         let members = members_origin.map(member => ({
             userId: member.userId,
-            displayName: member.displayName,
             joinedAt: new Date(member.joinedAt).toLocaleString("ja-JP", {
                 year: "numeric", month: "2-digit", day: "2-digit",
                 hour: "2-digit", minute: "2-digit", second: "2-digit"
             })
         }));
 
-        logger.info(`Retrieved ${members_origin.length} members from group ${groupId}.`);
-
         // 除外するユーザーIDのリスト
         const excludeUserIds = (process.env.EXCLUDE_USER_ID || "").split("\n").map(id => id.trim()).filter(id => id !== "");
+        logger.debug("Excluding user IDs: " + excludeUserIds.join(", "));
         // 除外ユーザーをフィルタリング
         members = members.filter(member => !excludeUserIds.includes(member.userId));
         // メンバー情報をDiscordに送信
