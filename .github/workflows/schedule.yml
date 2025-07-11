@@ -10,8 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Repository checkout
+        uses: actions/checkout@v4
 
-      - name: Run daily draw
-        uses: ./
-        id: draw
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: yarn setup
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
+      - name: Build project
+        run: yarn build
+
+      - name: Run Application
+        run: yarn start

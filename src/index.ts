@@ -39,12 +39,12 @@ const Main = async () => {
     logger.info("starting " + package_json.name + " v" + package_json.version);
 
     const vrchat = new VRChat(
-        process.env.apiKey,
-        process.env.email,
-        process.env.password,
-        package_json.name + "/v" + package_json.version + " " + package_json.github + " " + process.env.contact,
+        process.env.APIKEY,
+        process.env.EMAIL,
+        process.env.PASSWORD,
+        package_json.name + "/v" + package_json.version + " " + package_json.github + " " + process.env.CONTACT,
         "secret",
-        process.env.twoFactor,
+        process.env.TWOFACTOR,
     );
 
     let isLogin = false;
