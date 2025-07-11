@@ -58,15 +58,49 @@ const Main = async () => {
         logger.info("Login Success!");
     }
 
-    const exitProcess = async () => {
-        console.log("Exitting...");
+    const discord = new Discord(process.env.DISCORD_WEBHOOK_URL || "");
+
+    try {
+
+        // グループメンバーの取得
+        const groupId = process.env.GROUP_ID;
+        if (!groupId) {
+            throw new Error("GROUP_ID environment variable must be set.");
+        }
+
+        const members_origin = await vrchat.GetGroupMembers(groupId, 100, 0, "joinedAt:asc");
+
+        // { userId: string, displayName: string, joinedAt: string } の形式でメンバー情報を整形
+        let members = members_origin.map(member => ({
+            userId: member.userId,
+            displayName: member.displayName,
+            joinedAt: new Date(member.joinedAt).toLocaleString("ja-JP", {
+                year: "numeric", month: "2-digit", day: "2-digit",
+                hour: "2-digit", minute: "2-digit", second: "2-digit"
+            })
+        }));
+
+        // 除外するユーザーIDのリスト
+        const excludeUserIds = (process.env.EXCLUDE_USER_ID || "").split("\n").map(id => id.trim()).filter(id => id !== "");
+        // 除外ユーザーをフィルタリング
+        members = members.filter(member => !excludeUserIds.includes(member.userId));
+        // メンバー情報をDiscordに送信
+        if (members.length > 0) {
+            const message = members.map(member => `UserID: ${member.userId}, DisplayName: ${member.displayName}, JoinedAt: ${member.joinedAt}`).join("\n");
+            await discord.sendMessage("Group Members:\n" + message);
+            logger.info("Group members sent to Discord.");
+        }
+        else {
+            await discord.sendMessage("No members found in the group or all members were excluded.");
+            logger.info("No members found or all members were excluded.");
+        }
+        
+
+
+    } catch (error) {
+        logger.error("An error occurred: " + error);
+        await discord.sendMessage("An error occurred: " + error);
     }
-
-    process.on("SIGINT", async () => {
-        await exitProcess();
-        process.exit(0);
-    });
-
 
 }
 

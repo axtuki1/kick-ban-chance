@@ -166,7 +166,6 @@ export class VRChat {
 
                 if (response.status == 200) {
                     const twoFactorAuthMatch = response.headers.get("Set-Cookie")?.match(/twoFactorAuth=(.*?);/);
-                    console.log(twoFactorAuthMatch);
                     // Cookieのセットがあったらそれを保存する
                     if (twoFactorAuthMatch) {
                         this.isLogin = true;
@@ -287,6 +286,27 @@ export class VRChat {
             }
 
             throw new Error("remove failed: [" + response.status + " " + response.statusText + "] " + JSON.stringify(await response.json()));
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    public async GetGroupMembers(groupid: string, length: number = 100, offset: number = 0, sort: "" | "joinedAt:asc" | "joinedAt:desc" = "") {
+        try {
+            this.logger.debug("getting group member info");
+            const url = "https://api.vrchat.cloud/api/1/groups/<groupId>/members?n=<length>&offset=<offset>".replace("<groupId>", groupid).replace("<length>", length.toString()).replace("<offset>", offset.toString()) + (sort ? "&sort=" + sort : "");
+            
+            const response = await fetch(url, {
+                method: "GET",
+                headers: this.GetRequestHeader()
+            });
+
+            if (response.status === 200) {
+                return response.json();
+            }
+
+            throw new Error("get failed: [" + response.status + " " + response.statusText + "] " + JSON.stringify(await response.json()));
+
         } catch (e) {
             throw e;
         }
