@@ -29,3 +29,10 @@ jobs:
 
       - name: Run Application
         run: yarn start
+        env:
+          APIKEY: ${{ secrets.APIKEY }}
+          EMAIL: ${{ secrets.EMAIL }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          TWOFACTOR: ${{ secrets.TWOFACTOR }}
+          LOGLEVEL: ${{ env.LOGLEVEL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}  # Discord Webhook URL

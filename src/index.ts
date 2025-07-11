@@ -5,20 +5,19 @@ import { VRChat } from "./vrchat";
 import { Discord } from "./discord";
 const package_json = require('../package.json');
 
-console.log("///////////////////////////////////////////////");
-console.log("       " + package_json.name + " v" + package_json.version);
-console.log("///////////////////////////////////////////////");
-
-
 const Main = async () => {
+
+    Logger.level = (process.env.LOGLEVEL as Level) || "info";
+    let logger = new Logger("Main");
+
+    logger.info("///////////////////////////////////////////////");
+    logger.info("       " + package_json.name + " v" + package_json.version);
+    logger.info("///////////////////////////////////////////////");
 
     if (!process.env.APIKEY || !process.env.EMAIL || !process.env.PASSWORD) {
         console.error("APIKEY, EMAIL, and PASSWORD environment variables must be set.");
         return;
     }
-
-    Logger.level = (process.env.LOGLEVEL as Level) || "info";
-    let logger = new Logger("Main");
 
     logger.info("-------");
     logger.info("");
