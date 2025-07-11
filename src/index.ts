@@ -80,6 +80,8 @@ const Main = async () => {
             })
         }));
 
+        logger.info(`Retrieved ${members.length} members from group ${groupId}.`);
+
         // 除外するユーザーIDのリスト
         const excludeUserIds = (process.env.EXCLUDE_USER_ID || "").split("\n").map(id => id.trim()).filter(id => id !== "");
         // 除外ユーザーをフィルタリング
@@ -94,7 +96,7 @@ const Main = async () => {
             await discord.sendMessage("No members found in the group or all members were excluded.");
             logger.info("No members found or all members were excluded.");
         }
-        
+
 
 
     } catch (error) {

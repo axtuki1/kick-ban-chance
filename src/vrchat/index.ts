@@ -293,7 +293,7 @@ export class VRChat {
 
     public async GetGroupMembers(groupid: string, length: number = 100, offset: number = 0, sort: "" | "joinedAt:asc" | "joinedAt:desc" = "") {
         try {
-            this.logger.debug("getting group member info");
+            this.logger.debug("getting group members info");
             const url = "https://api.vrchat.cloud/api/1/groups/<groupId>/members?n=<length>&offset=<offset>".replace("<groupId>", groupid).replace("<length>", length.toString()).replace("<offset>", offset.toString()) + (sort ? "&sort=" + sort : "");
             
             const response = await fetch(url, {
