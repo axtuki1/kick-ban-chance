@@ -1,37 +1,23 @@
-import * as fs from "fs";
 import { Msg } from "./util/msg";
 import * as OTPAuth from "otpauth";
-import { Logger } from "./util/logger";
+import { Logger, Level } from "./util/logger";
 import { VRChat } from "./vrchat";
 import { Discord } from "./discord";
-const { parse } = require("jsonc-parser");
-const config = (() => {
-    const json = fs.readFileSync("./config/config.json");
-    return parse(json.toString());
-})();
-const bodyParser = require('body-parser');
 const package_json = require('../package.json');
 
 console.log("///////////////////////////////////////////////");
 console.log("       " + package_json.name + " v" + package_json.version);
 console.log("///////////////////////////////////////////////");
 
-if (!fs.existsSync("secret")) {
-    fs.mkdirSync("secret");
-}
-
-const DEBUGLOG = (sender, value) => {
-    if (!config.debug) return;
-    console.log("[" + sender + "]--------");
-    console.log(value);
-}
-
-const userAgent = package_json.name + "/v" + package_json.version + " " + package_json.github + " " + config.contact;
-
 
 const Main = async () => {
 
-    Logger.level = config.logLevel || "info";
+    if (!process.env.APIKEY || !process.env.EMAIL || !process.env.PASSWORD) {
+        console.error("APIKEY, EMAIL, and PASSWORD environment variables must be set.");
+        return;
+    }
+
+    Logger.level = (process.env.LOGLEVEL as Level) || "info";
     let logger = new Logger("Main");
 
     logger.info("-------");

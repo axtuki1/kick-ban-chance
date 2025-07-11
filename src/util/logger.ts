@@ -1,6 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
 
+export type Level = "info" | "debug" | "warn" | "error";
+
 export class Logger {
 
     private levelPriority = {
@@ -8,7 +10,7 @@ export class Logger {
     }
 
     private sender;
-    public static level: "info" | "debug" | "warn" | "error" = "info";
+    public static level: Level = "info";
     public static logFilePath: string = "./log/%year-%month-%date.log";
 
     constructor(sender) {
