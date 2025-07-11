@@ -70,6 +70,8 @@ const Main = async () => {
 
         const members_origin = await vrchat.GetGroupMembers(groupId, 100, 0, "joinedAt:asc");
 
+        logger.debug(JSON.stringify(members_origin, null, 2));
+
         // { userId: string, displayName: string, joinedAt: string } の形式でメンバー情報を整形
         let members = members_origin.map(member => ({
             userId: member.userId,
