@@ -115,7 +115,7 @@ export class VRChat {
                     path.join(this.secretFolder, "authCookie.txt"),
                     this.authCookie
                 );
-                
+
                 this.isLogin = true;
                 const json = await response.json();
 
@@ -197,7 +197,7 @@ export class VRChat {
         // ここまで来たら失敗
         this.isLogin = false;
         throw new LoginFailureException(`TwoFactorAuth failed for all types: ${this.otpType.join(", ")}`);
-    
+
     }
 
     //#endregion Auth
@@ -228,11 +228,31 @@ export class VRChat {
 
     //#region Group Management
 
+    public async GetGroupInfo(groupId: string) {
+        try {
+            this.logger.debug("getting group info");
+            const url = "https://api.vrchat.cloud/api/1/groups/<groupId>".replace("<groupId>", groupId);
+            const response = await fetch(url, {
+                method: "GET",
+                headers: this.GetRequestHeader()
+            });
+
+            if (response.status === 200) {
+                return response.json();
+            }
+
+            throw new Error("get failed: [" + response.status + " " + response.statusText + "] " + JSON.stringify(await response.json()));
+
+        } catch (e) {
+            throw e;
+        }
+    }
+
     public async GetGroupMember(groupid: string, userId: string) {
         try {
             this.logger.debug("getting group member info");
             const url = "https://api.vrchat.cloud/api/1/groups/<groupId>/members/<userId>".replace("<groupId>", groupid).replace("<userId>", userId);
-            
+
             const response = await fetch(url, {
                 method: "GET",
                 headers: this.GetRequestHeader()
@@ -297,7 +317,7 @@ export class VRChat {
             const url = "https://api.vrchat.cloud/api/1/groups/<groupId>/members?n=<length>&offset=<offset>".replace("<groupId>", groupid).replace("<length>", length.toString()).replace("<offset>", offset.toString()) + (sort ? "&sort=" + sort : "");
 
             this.logger.debug("Request URL: " + url);
-            
+
             const response = await fetch(url, {
                 method: "GET",
                 headers: this.GetRequestHeader()
@@ -315,5 +335,119 @@ export class VRChat {
     }
 
     //#endregion Group Management
+
+    //#region Group Post Management
+
+    public async GetGroupPosts(groupid: string, length: number = 100, offset: number = 0) {
+        try {
+            this.logger.debug("getting group posts info");
+            const url = "https://api.vrchat.cloud/api/1/groups/<groupId>/posts?n=<length>&offset=<offset>".replace("<groupId>", groupid).replace("<length>", length.toString()).replace("<offset>", offset.toString());
+
+            const response = await fetch(url, {
+                method: "GET",
+                headers: this.GetRequestHeader()
+            });
+
+            if (response.status === 200) {
+                return response.json();
+            }
+
+            throw new Error("get failed: [" + response.status + " " + response.statusText + "] " + JSON.stringify(await response.json()));
+
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    public async CreateGroupPost(groupid: string, title: string, content: string, isNotice: boolean = false, roleIds: string[] = [], visibility: "group" | "public" = "group") {
+        try {
+            this.logger.debug("Creating group post");
+            const url = "https://api.vrchat.cloud/api/1/groups/<groupId>/posts".replace("<groupId>", groupid);
+
+            const response = await fetch(url, {
+                method: "POST",
+                headers: this.GetRequestHeader(),
+                body: JSON.stringify({
+                    title: title,
+                    content: content,
+                    imageId: null,
+                    sendNotification: isNotice,
+                    roleIds: roleIds,
+                    visibility: visibility
+                })
+            });
+
+            if (response.status === 201) {
+                return response.json();
+            }
+
+            throw new Error("create failed: [" + response.status + " " + response.statusText + "] " + JSON.stringify(await response.json()));
+
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    public async DeleteGroupPost(groupid: string, postId: string) {
+        try {
+            this.logger.debug("Deleting group post");
+            const url = "https://api.vrchat.cloud/api/1/groups/<groupId>/posts/<postId>".replace("<groupId>", groupid).replace("<postId>", postId);
+
+            const response = await fetch(url, {
+                method: "DELETE",
+                headers: this.GetRequestHeader()
+            });
+
+            if (response.status === 204) {
+                return true; // 成功
+            }
+
+            throw new Error("delete failed: [" + response.status + " " + response.statusText + "] " + JSON.stringify(await response.json()));
+
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    public async UpdateGroupPost(groupid: string, title: string, content: string, isNotice: boolean = false, roleIds: string[] = [], visibility: "group" | "public" = "group") {
+        let response;
+        try {
+            this.logger.debug("Updating group post");
+
+            const list = await this.GetGroupPosts(groupid, 100, 0);
+
+            list["posts"].filter((post) => post.title == title).forEach(async post => {
+                await this.DeleteGroupPost(groupid, post.id);
+            });
+            
+            await this.CreateGroupPost(groupid, title, content, isNotice, roleIds, visibility);
+
+        } catch (e) {
+            throw new Error("update failed: " + e);
+        }
+    }
+
+    public async GetGroupPost(groupid: string, postId: string) {
+        try {
+            this.logger.debug("getting group post info");
+            const url = "https://api.vrchat.cloud/api/1/groups/<groupId>/posts/<postId>".replace("<groupId>", groupid).replace("<postId>", postId);
+
+            const response = await fetch(url, {
+                method: "GET",
+                headers: this.GetRequestHeader()
+            });
+
+            if (response.status === 200) {
+                return response.json();
+            }
+
+            throw new Error("get failed: [" + response.status + " " + response.statusText + "] " + JSON.stringify(await response.json()));
+
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    //#endregion Group Post Management
 
 }

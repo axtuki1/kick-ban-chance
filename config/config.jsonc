@@ -1,0 +1,25 @@
+{
+    "postTemplate": {
+        "title": "結果発表",
+        "content": {
+            // 参加人数不足
+            "nonEnoughPlayers": [
+                "必要な参加人数({player_count}人)に満たないため抽選を中止しました。"
+            ],
+            // ハズレ
+            "noPick": [
+                "",
+                "",
+                ""
+            ],
+            // 当たり(kick)
+            "kick": [
+
+            ],
+            // 当たり(ban)
+            "ban": [
+                ""
+            ]
+        }
+    }
+}

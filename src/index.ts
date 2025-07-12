@@ -1,8 +1,14 @@
+import * as fs from "fs";
 import { Msg } from "./util/msg";
 import * as OTPAuth from "otpauth";
 import { Logger, Level } from "./util/logger";
 import { VRChat } from "./vrchat";
 import { Discord } from "./discord";
+import { parse } from "jsonc-parser";
+const config = (() => {
+    const json = fs.readFileSync("./config/config.json");
+    return parse(json.toString());
+})();
 const package_json = require('../package.json');
 
 const Main = async () => {
@@ -84,15 +90,25 @@ const Main = async () => {
         logger.debug("Excluding user IDs: " + excludeUserIds.join(", "));
         // 除外ユーザーをフィルタリング
         members = members.filter(member => !excludeUserIds.includes(member.userId));
-        // メンバー情報をDiscordに送信
-        if (members.length > 0) {
-            const message = members.map(member => `UserID: ${member.userId}, DisplayName: ${member.displayName}, JoinedAt: ${member.joinedAt}`).join("\n");
-            await discord.sendMessage("Group Members:\n" + message);
-            logger.info("Group members sent to Discord.");
-        }
-        else {
-            await discord.sendMessage("No members found in the group or all members were excluded.");
-            logger.info("No members found or all members were excluded.");
+        
+        const groupInfo = await vrchat.GetGroupInfo(groupId);
+        logger.info("Target Group Name: " + groupInfo.name);
+        logger.info("Total Group Members: " + groupInfo.memberCount);
+
+        const groupMemberCount = groupInfo.memberCount - excludeUserIds.length;
+
+        if (members.length < process.env.REQUIRED_PLAYER_COUNT) {
+            logger.info("Not enough members to kick/ban. Required: " + process.env.REQUIRED_PLAYER_COUNT + ", Found: " + members.length);
+            await discord.sendMessage("Not enough members to kick/ban. Required: " + process.env.REQUIRED_PLAYER_COUNT + ", Found: " + members.length);
+            
+            vrchat.UpdateGroupPost(
+                groupId,
+                config.postTemplate.title,
+                config.postTemplate.content.nonEnoughPlayers.join("\n").replace("{player_count}", groupMemberCount.toString()),
+                false
+            )
+
+            return;
         }
 
 
