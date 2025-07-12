@@ -161,7 +161,7 @@ const Main = async () => {
             logger.info(`Selected member: ${selectedMember.userId} for action: ${action}`);
 
             const joinDuration = new Date().getTime() - new Date(selectedMember.joinedAt).getTime();
-            
+
             // 日数(小数点以下2桁)に変換
             const joinDurationDays = (joinDuration / (1000 * 60 * 60 * 24)).toFixed(2);
 
@@ -170,7 +170,11 @@ const Main = async () => {
                 year: "numeric", month: "2-digit", day: "2-digit",
                 hour: "2-digit", minute: "2-digit", second: "2-digit"
             });
-            
+            // ユーザー情報の取得
+            const userId = selectedMember.userId;
+            const userInfo = await vrchat.GetUserInfo(selectedMember.userId);
+            logger.info(`Selected user info: ${userId} - ${userInfo.displayName}`);
+
             if (action === "ban") {
                 await vrchat.UpdateGroupPost(
                     groupId,
@@ -178,7 +182,7 @@ const Main = async () => {
                     replace(
                         config.postTemplate.content.ban.join("\n"),
                         {
-                            "player_id": selectedMember.userId,
+                            "player_name": userInfo.displayName,
                             "joined_at": joinedAtJST,
                             "joinDuration": joinDurationDays
                         }
@@ -195,7 +199,7 @@ const Main = async () => {
                     replace(
                         config.postTemplate.content.kick.join("\n"),
                         {
-                            "player_id": selectedMember.userId,
+                            "player_name": userInfo.displayName,
                             "joined_at": joinedAtJST,
                             "joinDuration": joinDurationDays
                         }
