@@ -21,6 +21,7 @@ const replace = (str: string, data: Record<string, string>): string => {
 // Date型を"YYYY年MM月D日"形式の文字列に変換する関数
 const formatDate = (date: Date): string => {
     return date.toLocaleDateString("ja-JP", {
+        timeZone: "Asia/Tokyo",
         year: "numeric",
         month: "2-digit",
         day: "2-digit"
