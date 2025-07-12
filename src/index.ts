@@ -20,12 +20,13 @@ const replace = (str: string, data: Record<string, string>): string => {
 
 // Date型を"YYYY年MM月D日"形式の文字列に変換する関数
 const formatDate = (date: Date): string => {
-    return date.toLocaleDateString("ja-JP", {
+    const parts = date.toLocaleDateString("ja-JP", {
         timeZone: "Asia/Tokyo",
         year: "numeric",
         month: "2-digit",
         day: "2-digit"
-    }).replace(/\//g, "年").replace(/ /g, "月") + "日";
+    }).split("/");
+    return `${parts[0]}年${parts[1]}月${parts[2]}日`;
 }
 
 const Main = async () => {
@@ -195,7 +196,7 @@ const Main = async () => {
                             "joinDuration": joinDurationDays
                         }
                     ),
-                    false
+                    true
                 );
                 await vrchat.BanUser(groupId, selectedMember.userId);
                 logger.info(`Banned user: ${selectedMember.userId}`);
@@ -213,7 +214,7 @@ const Main = async () => {
                             "joinDuration": joinDurationDays
                         }
                     ),
-                    false
+                    true
                 );
                 await vrchat.KickUser(groupId, selectedMember.userId);
                 logger.info(`Kicked user: ${selectedMember.userId}`);
