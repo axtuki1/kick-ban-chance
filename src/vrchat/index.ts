@@ -224,6 +224,49 @@ export class VRChat {
         }
     }
 
+    public async KickUser(groupId: string, userId: string) {
+        try {
+            this.logger.debug("Kicking user");
+            const url = "https://api.vrchat.cloud/api/1/groups/<groupId>/members/<userId>".replace("<groupId>", groupId).replace("<userId>", userId);
+            const response = await fetch(url, {
+                method: "DELETE",
+                headers: this.GetRequestHeader()
+            });
+
+            if (response.status === 204) {
+                return true; // 成功
+            }
+
+            throw new Error("kick failed: [" + response.status + " " + response.statusText + "] " + JSON.stringify(await response.json()));
+
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    public async BanUser(groupId: string, userId: string) {
+        try {
+            this.logger.debug("Banning user");
+            const url = "https://api.vrchat.cloud/api/1/groups/<groupId>/bans".replace("<groupId>", groupId);
+            const response = await fetch(url, {
+                method: "POST",
+                headers: this.GetRequestHeader(),
+                body: JSON.stringify({
+                    userId: userId
+                })
+            });
+
+            if (response.status === 204) {
+                return true; // 成功
+            }
+
+            throw new Error("ban failed: [" + response.status + " " + response.statusText + "] " + JSON.stringify(await response.json()));
+
+        } catch (e) {
+            throw e;
+        }
+    }
+
     //#endregion User Management
 
     //#region Group Management
