@@ -412,7 +412,7 @@ export class VRChat {
                 headers: this.GetRequestHeader(),
                 body: JSON.stringify({
                     title: title,
-                    content: content,
+                    text: content,
                     imageId: null,
                     sendNotification: isNotice,
                     roleIds: roleIds,
