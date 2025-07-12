@@ -40,6 +40,7 @@ jobs:
           REQUIRED_PLAYER_COUNT: ${{ vars.REQUIRED_PLAYER_COUNT }}
           KICK_CHANCE_PERCENT: ${{ vars.KICK_CHANCE_PERCENT }}
           BAN_CHANCE_PERCENT: ${{ vars.BAN_CHANCE_PERCENT }}
+          EXCLUDE_USER_ID: ${{ vars.EXCLUDE_USER_ID }}
           
 
 
