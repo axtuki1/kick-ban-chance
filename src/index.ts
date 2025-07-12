@@ -6,7 +6,7 @@ import { VRChat } from "./vrchat";
 import { Discord } from "./discord";
 import { parse } from "jsonc-parser";
 const config = (() => {
-    const json = fs.readFileSync("../config/config.json");
+    const json = fs.readFileSync("./config/config.jsonc");
     return parse(json.toString());
 })();
 const package_json = require('../package.json');
