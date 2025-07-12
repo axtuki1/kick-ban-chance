@@ -115,6 +115,9 @@ const Main = async () => {
                 replace(
                     config.postTemplate.content.nonEnoughPlayers.join("\n"),
                     {
+                        "date": new Date().toLocaleString("ja-JP", {
+                            year: "numeric", month: "2-digit", day: "2-digit"
+                        }),
                         "player_count": groupMemberCount.toString()
                     }
                 ),
@@ -143,6 +146,9 @@ const Main = async () => {
                 replace(
                     config.postTemplate.content.noPick.join("\n"),
                     {
+                        "date": new Date().toLocaleString("ja-JP", {
+                            year: "numeric", month: "2-digit", day: "2-digit"
+                        }),
                         "player_count": groupMemberCount.toString()
                     }
                 ),
@@ -182,12 +188,15 @@ const Main = async () => {
                     replace(
                         config.postTemplate.content.ban.join("\n"),
                         {
+                            "date": new Date().toLocaleString("ja-JP", {
+                                year: "numeric", month: "2-digit", day: "2-digit"
+                            }),
                             "player_name": userInfo.displayName,
                             "joined_at": joinedAtJST,
                             "joinDuration": joinDurationDays
                         }
                     ),
-                    true
+                    false
                 );
                 await vrchat.BanUser(groupId, selectedMember.userId);
                 logger.info(`Banned user: ${selectedMember.userId}`);
@@ -199,12 +208,15 @@ const Main = async () => {
                     replace(
                         config.postTemplate.content.kick.join("\n"),
                         {
+                            "date": new Date().toLocaleString("ja-JP", {
+                                year: "numeric", month: "2-digit", day: "2-digit"
+                            }),
                             "player_name": userInfo.displayName,
                             "joined_at": joinedAtJST,
                             "joinDuration": joinDurationDays
                         }
                     ),
-                    true
+                    false
                 );
                 await vrchat.KickUser(groupId, selectedMember.userId);
                 logger.info(`Kicked user: ${selectedMember.userId}`);
@@ -218,6 +230,9 @@ const Main = async () => {
                 replace(
                     config.postTemplate.content.noPick.join("\n"),
                     {
+                        "date": new Date().toLocaleString("ja-JP", {
+                            year: "numeric", month: "2-digit", day: "2-digit"
+                        }),
                         "player_count": groupMemberCount.toString()
                     }
                 ),
