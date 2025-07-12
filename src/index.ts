@@ -18,6 +18,15 @@ const replace = (str: string, data: Record<string, string>): string => {
     );
 }
 
+// Date型を"YYYY年MM月D日"形式の文字列に変換する関数
+const formatDate = (date: Date): string => {
+    return date.toLocaleDateString("ja-JP", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).replace(/\//g, "年").replace(/ /g, "月") + "日";
+}
+
 const Main = async () => {
 
     Logger.level = (process.env.LOGLEVEL as Level) || "info";
@@ -86,10 +95,7 @@ const Main = async () => {
         // { userId: string, joinedAt: string } の形式でメンバー情報を整形
         let members = members_origin.map(member => ({
             userId: member.userId,
-            joinedAt: new Date(member.joinedAt).toLocaleString("ja-JP", {
-                year: "numeric", month: "2-digit", day: "2-digit",
-                hour: "2-digit", minute: "2-digit", second: "2-digit"
-            })
+            joinedAt: new Date(member.joinedAt)
         }));
 
         // 除外するユーザーIDのリスト
@@ -115,9 +121,7 @@ const Main = async () => {
                 replace(
                     config.postTemplate.content.nonEnoughPlayers.join("\n"),
                     {
-                        "date": new Date().toLocaleString("ja-JP", {
-                            year: "numeric", month: "2-digit", day: "2-digit"
-                        }),
+                        "date": formatDate(new Date()),
                         "player_count": groupMemberCount.toString()
                     }
                 ),
@@ -146,9 +150,7 @@ const Main = async () => {
                 replace(
                     config.postTemplate.content.noPick.join("\n"),
                     {
-                        "date": new Date().toLocaleString("ja-JP", {
-                            year: "numeric", month: "2-digit", day: "2-digit"
-                        }),
+                        "date": formatDate(new Date()),
                         "player_count": groupMemberCount.toString()
                     }
                 ),
@@ -172,10 +174,8 @@ const Main = async () => {
             const joinDurationDays = (joinDuration / (1000 * 60 * 60 * 24)).toFixed(2);
 
             // JSTに変換
-            const joinedAtJST = new Date(selectedMember.joinedAt).toLocaleString("ja-JP", {
-                year: "numeric", month: "2-digit", day: "2-digit",
-                hour: "2-digit", minute: "2-digit", second: "2-digit"
-            });
+            const joinedAtJST = formatDate(new Date(selectedMember.joinedAt));
+            
             // ユーザー情報の取得
             const userId = selectedMember.userId;
             const userInfo = await vrchat.GetUserInfo(selectedMember.userId);
@@ -188,9 +188,7 @@ const Main = async () => {
                     replace(
                         config.postTemplate.content.ban.join("\n"),
                         {
-                            "date": new Date().toLocaleString("ja-JP", {
-                                year: "numeric", month: "2-digit", day: "2-digit"
-                            }),
+                            "date": formatDate(new Date()),
                             "player_name": userInfo.displayName,
                             "joined_at": joinedAtJST,
                             "joinDuration": joinDurationDays
@@ -208,9 +206,7 @@ const Main = async () => {
                     replace(
                         config.postTemplate.content.kick.join("\n"),
                         {
-                            "date": new Date().toLocaleString("ja-JP", {
-                                year: "numeric", month: "2-digit", day: "2-digit"
-                            }),
+                            "date": formatDate(new Date()),
                             "player_name": userInfo.displayName,
                             "joined_at": joinedAtJST,
                             "joinDuration": joinDurationDays
@@ -230,9 +226,7 @@ const Main = async () => {
                 replace(
                     config.postTemplate.content.noPick.join("\n"),
                     {
-                        "date": new Date().toLocaleString("ja-JP", {
-                            year: "numeric", month: "2-digit", day: "2-digit"
-                        }),
+                        "date": formatDate(new Date()),
                         "player_count": groupMemberCount.toString()
                     }
                 ),
