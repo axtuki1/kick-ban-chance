@@ -2,7 +2,7 @@ name: Check Chance
 
 on:
   schedule:
-    - cron: "0 14 * * *"  # 毎日 21:00 JST
+    - cron: "0 15 * * *"  # 毎日 0:00 JST
   workflow_dispatch:
 
 jobs:
@@ -41,6 +41,6 @@ jobs:
           KICK_CHANCE_PERCENT: ${{ vars.KICK_CHANCE_PERCENT }}
           BAN_CHANCE_PERCENT: ${{ vars.BAN_CHANCE_PERCENT }}
           EXCLUDE_USER_ID: ${{ vars.EXCLUDE_USER_ID }}
-          
+
 
 
