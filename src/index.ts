@@ -124,7 +124,8 @@ const Main = async () => {
                     config.postTemplate.content.nonEnoughPlayers.join("\n"),
                     {
                         "date": formatDate(new Date()),
-                        "player_count": groupMemberCount.toString()
+                        "player_count": groupMemberCount.toString(),
+                        "required_player_count": requiredPlayerCount
                     }
                 ),
                 config.postTemplate.content.nonEnoughPlayers.join("\n").replace("{player_count}", groupMemberCount.toString()),
