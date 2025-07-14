@@ -129,7 +129,6 @@ const Main = async () => {
                         "required_player_count": requiredPlayerCount.toString()
                     }
                 ),
-                config.postTemplate.content.nonEnoughPlayers.join("\n").replace("{player_count}", groupMemberCount.toString()),
                 false
             )
 
