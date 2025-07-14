@@ -120,6 +120,7 @@ const Main = async () => {
 
             vrchat.UpdateGroupPost(
                 groupId,
+                config.postTemplate.title,
                 replace(
                     config.postTemplate.content.nonEnoughPlayers.join("\n"),
                     {
