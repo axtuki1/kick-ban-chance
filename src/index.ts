@@ -92,19 +92,20 @@ const Main = async () => {
             throw new Error("GROUP_ID environment variable must be set.");
         }
 
-        const members_origin = await vrchat.GetGroupMembers(groupId, 100, 0, "joinedAt:asc");
-
-        // { userId: string, joinedAt: string } の形式でメンバー情報を整形
-        let members = members_origin.map(member => ({
-            userId: member.userId,
-            joinedAt: new Date(member.joinedAt)
-        }));
-
         // 除外するユーザーIDのリスト
         const excludeUserIds = (process.env.EXCLUDE_USER_ID || "").split("\n").map(id => id.trim()).filter(id => id !== "");
         logger.debug("Excluding user IDs: " + excludeUserIds.join(", "));
-        // 除外ユーザーをフィルタリング
-        members = members.filter(member => !excludeUserIds.includes(member.userId));
+
+        // const members_origin = await vrchat.GetGroupMembers(groupId, 100, 0, "joinedAt:asc");
+
+        // // { userId: string, joinedAt: string } の形式でメンバー情報を整形
+        // let members = members_origin.map(member => ({
+        //     userId: member.userId,
+        //     joinedAt: new Date(member.joinedAt)
+        // }));
+
+        // // 除外ユーザーをフィルタリング
+        // members = members.filter(member => !excludeUserIds.includes(member.userId));
 
         const groupInfo = await vrchat.GetGroupInfo(groupId);
         logger.info("Target Group Name: " + groupInfo.name);
@@ -115,8 +116,8 @@ const Main = async () => {
         // 人数不足
         const requiredPlayerCount = parseInt(process.env.REQUIRED_PLAYER_COUNT || "0");
         if (groupMemberCount < requiredPlayerCount) {
-            logger.info("Not enough members to kick/ban. Required: " + requiredPlayerCount + ", Found: " + members.length);
-            await discord.sendMessage("Not enough members to kick/ban. Required: " + requiredPlayerCount + ", Found: " + members.length);
+            logger.info("Not enough members to kick/ban. Required: " + requiredPlayerCount + ", Found: " + groupMemberCount);
+            await discord.sendMessage("Not enough members to kick/ban. Required: " + requiredPlayerCount + ", Found: " + groupMemberCount);
 
             vrchat.UpdateGroupPost(
                 groupId,
@@ -168,7 +169,18 @@ const Main = async () => {
 
             const action = subRoll < banWeight ? "ban" : "kick";
 
-            const selectedMember = members[Math.floor(Math.random() * members.length)];
+            let selectedMember;
+            let tryCount = 0;
+            do {
+                // グループメンバーからランダムに1人選ぶ
+                selectedMember = await vrchat.GetGroupMembers(groupId, 1, Math.floor(Math.random() * groupInfo.memberCount), "joinedAt:asc")[0];
+                tryCount++;
+                if (tryCount > 100) {
+                    // 100回試行しても見つからなかった場合は、最新のメンバーを取得
+                    selectedMember = await vrchat.GetGroupMembers(groupId, 1, 0, "joinedAt:desc")[0];
+                }
+            // 除外ユーザーIDに含まれていないことを確認
+            } while (excludeUserIds.includes(selectedMember.userId));
             logger.info(`Selected member: ${selectedMember.userId} for action: ${action}`);
 
             const joinDuration = new Date().getTime() - new Date(selectedMember.joinedAt).getTime();
@@ -182,7 +194,7 @@ const Main = async () => {
             // ユーザー情報の取得
             const userId = selectedMember.userId;
             const userInfo = await vrchat.GetUserInfo(selectedMember.userId);
-            logger.info(`Selected user info: ${userId} - ${userInfo.displayName}`);
+            logger.info(`Selected user info: ${userInfo.displayName}`);
 
             if (action === "ban") {
                 await vrchat.UpdateGroupPost(
