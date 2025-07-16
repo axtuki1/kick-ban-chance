@@ -147,7 +147,10 @@ const Main = async () => {
         const totalChance = kickPercent + banPercent;
         const roll = Math.random() * 100;  // 0.00 ～ 99.99
 
+        logger.info("Roll result: " + roll.toString() + ", totalChance: " + totalChance.toString() + " (" + kickPercent.toString() + " + " + banPercent + ") ");
+        
         if (roll >= totalChance) {
+            await discord.sendMessage("Not selected in the draw.");
             await vrchat.UpdateGroupPost(
                 groupId,
                 config.postTemplate.title,
@@ -168,6 +171,8 @@ const Main = async () => {
             const subRoll = Math.random();
 
             const action = subRoll < banWeight ? "ban" : "kick";
+
+            logger.debug("subRoll: " + subRoll.toString() + " < banWeight: " + banWeight);
 
             let selectedMember;
             let tryCount = 0;
