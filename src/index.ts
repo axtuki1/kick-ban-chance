@@ -147,7 +147,7 @@ const Main = async () => {
         const totalChance = kickPercent + banPercent;
         const roll = Math.random() * 100;  // 0.00 ～ 99.99
 
-        logger.info("Roll result: " + roll.toString() + ", totalChance: " + totalChance.toString() + " (" + kickPercent.toString() + " + " + banPercent + ") ");
+        logger.info("Roll result: " + roll.toString() + ", totalChance: " + totalChance.toString() + " (" + kickPercent.toString() + " + " + banPercent.toString() + ") ");
         
         if (roll >= totalChance) {
             await discord.sendMessage("Not selected in the draw.");
@@ -172,7 +172,7 @@ const Main = async () => {
 
             const action = subRoll < banWeight ? "ban" : "kick";
 
-            logger.debug("subRoll: " + subRoll.toString() + " < banWeight: " + banWeight);
+            logger.debug("subRoll: " + subRoll.toString() + " < banWeight: " + banWeight.toString());
 
             let selectedMember;
             let tryCount = 0;
