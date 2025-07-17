@@ -41,6 +41,9 @@ jobs:
           KICK_CHANCE_PERCENT: ${{ vars.KICK_CHANCE_PERCENT }}
           BAN_CHANCE_PERCENT: ${{ vars.BAN_CHANCE_PERCENT }}
           EXCLUDE_USER_ID: ${{ vars.EXCLUDE_USER_ID }}
-
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_DATABASE_ID: ${{ secrets.CLOUDFLARE_DATABASE_ID }}
+  
 
 

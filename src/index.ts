@@ -5,6 +5,7 @@ import { Logger, Level } from "./util/logger";
 import { VRChat } from "./vrchat";
 import { Discord } from "./discord";
 import { parse } from "jsonc-parser";
+import uuid from "ui7";
 const config = (() => {
     const json = fs.readFileSync("./config/config.jsonc");
     return parse(json.toString());
@@ -179,7 +180,7 @@ const Main = async () => {
                     // 100回試行しても見つからなかった場合は、最新のメンバーを取得
                     selectedMember = await vrchat.GetGroupMembers(groupId, 1, 0, "joinedAt:desc")[0];
                 }
-            // 除外ユーザーIDに含まれていないことを確認
+                // 除外ユーザーIDに含まれていないことを確認
             } while (excludeUserIds.includes(selectedMember.userId));
             logger.info(`Selected member: ${selectedMember.userId} for action: ${action}`);
 
@@ -190,7 +191,7 @@ const Main = async () => {
 
             // JSTに変換
             const joinedAtJST = formatDate(new Date(selectedMember.joinedAt));
-            
+
             // ユーザー情報の取得
             const userId = selectedMember.userId;
             const userInfo = await vrchat.GetUserInfo(selectedMember.userId);
@@ -233,20 +234,14 @@ const Main = async () => {
                 logger.info(`Kicked user: ${selectedMember.userId}`);
                 await discord.sendMessage(`Kicked user: ${selectedMember.userId} (${joinedAtJST})`);
             }
+            await cloudflare_d1_insert(
+                userId,
+                userInfo.displayName,
+                selectedMember.joinedAt,
+                joinDurationDays,
+                action
+            );
         } catch (error) {
-            // コケたらはずれってことでお茶を濁す
-            await vrchat.UpdateGroupPost(
-                groupId,
-                config.postTemplate.title,
-                replace(
-                    config.postTemplate.content.noPick.join("\n"),
-                    {
-                        "date": formatDate(new Date()),
-                        "player_count": groupMemberCount.toString()
-                    }
-                ),
-                false
-            )
             throw error;
         }
 
@@ -255,6 +250,33 @@ const Main = async () => {
         await discord.sendMessage("An error occurred: " + error);
     }
 
+}
+
+const cloudflare_d1_insert = async (playerId, playerName, joinDate, joinDuration, action) => {
+    let logger = new Logger("Cloudflare");
+    try {
+        const url = "https://api.cloudflare.com/client/v4/accounts/<accountId>/d1/database/<databaseId>/query".replace("<accountId>", process.env.CLOUDFLARE_ACCOUNT_ID).replace("<databaseId>", process.env.CLOUDFLARE_DATABASE_ID);
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+            },
+            body: JSON.stringify({
+                sql: `INSERT INTO history (id, date, player_id, displayName, joinDate, joinDuration, action) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                params: [
+                    uuid(),
+                    new Date().toISOString(),
+                    playerId,
+                    playerName,
+                    joinDate,
+                    joinDuration,
+                    action
+                ]
+            })
+        });
+    } catch (error) {
+        logger.error("Error inserting into D1 database: " + error);
+    }
 }
 
 Main();
