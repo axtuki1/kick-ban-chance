@@ -148,7 +148,9 @@ const Main = async () => {
         const totalChance = kickPercent + banPercent;
         const roll = Math.random() * 100;  // 0.00 ～ 99.99
 
-        logger.info("Roll result: " + roll.toString() + ", totalChance: " + totalChance.toString() + " (" + kickPercent.toString() + " + " + banPercent.toString() + ") ");
+        const rollResult = "Roll result: " + roll.toString() + ", totalChance: " + totalChance.toString() + " (" + kickPercent.toString() + " + " + banPercent.toString() + ") "
+        logger.info(rollResult);
+        await discord.sendMessage(rollResult);
         
         if (roll >= totalChance) {
             await discord.sendMessage("Not selected in the draw.");
