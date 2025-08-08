@@ -5,7 +5,8 @@ import { Logger, Level } from "./util/logger";
 import { VRChat } from "./vrchat";
 import { Discord } from "./discord";
 import { parse } from "jsonc-parser";
-import uuid from "ui7";
+import { CloudflareUtils } from "./cloudflare/index";
+
 const config = (() => {
     const json = fs.readFileSync("./config/config.jsonc");
     return parse(json.toString());
@@ -166,6 +167,17 @@ const Main = async () => {
                 ),
                 false
             )
+            const AllRollCount = Number(await (await CloudflareUtils.GetKVRecord("AllRollCount")).text()) || 0;
+            await CloudflareUtils.SetKVRecord(
+                "AllRollCount", 
+                AllRollCount + 1
+            );
+
+            const CurrentRollCount = Number(await (await CloudflareUtils.GetKVRecord("CurrentRollCount")).text()) || 0;
+            await CloudflareUtils.SetKVRecord(
+                "CurrentRollCount", 
+                CurrentRollCount + 1
+            );
             return;
         }
 
@@ -241,12 +253,23 @@ const Main = async () => {
                 logger.info(`Kicked user: ${selectedMember.userId}`);
                 await discord.sendMessage(`Kicked user: ${selectedMember.userId} (${joinedAtJST})`);
             }
-            await cloudflare_d1_insert(
+            await CloudflareUtils.InsertTargetPlayer(
                 userId,
                 userInfo.displayName,
                 selectedMember.joinedAt,
                 joinDurationDays,
                 action
+            );
+
+            const AllRollCount = Number(await (await CloudflareUtils.GetKVRecord("AllRollCount")).text()) || 0;
+            await CloudflareUtils.SetKVRecord(
+                "AllRollCount", 
+                AllRollCount + 1
+            );
+
+            await CloudflareUtils.SetKVRecord(
+                "CurrentRollCount", 
+                0
             );
         } catch (error) {
             throw error;
@@ -258,32 +281,6 @@ const Main = async () => {
     }
 
 }
-
-const cloudflare_d1_insert = async (playerId, playerName, joinDate, joinDuration, action) => {
-    let logger = new Logger("Cloudflare");
-    try {
-        const url = "https://api.cloudflare.com/client/v4/accounts/<accountId>/d1/database/<databaseId>/query".replace("<accountId>", process.env.CLOUDFLARE_ACCOUNT_ID).replace("<databaseId>", process.env.CLOUDFLARE_DATABASE_ID);
-        const response = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
-            },
-            body: JSON.stringify({
-                sql: `INSERT INTO history (id, date, player_id, displayName, joinDate, joinDuration, action) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                params: [
-                    uuid(),
-                    new Date().toISOString(),
-                    playerId,
-                    playerName,
-                    joinDate,
-                    joinDuration,
-                    action
-                ]
-            })
-        });
-    } catch (error) {
-        logger.error("Error inserting into D1 database: " + error);
-    }
-}
-
 Main();
+
+
