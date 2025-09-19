@@ -138,6 +138,10 @@ const Main = async () => {
             return;
         }
 
+
+        const AllRollCount = Number(await (await CloudflareUtils.GetKVRecord("AllRollCount")).text()) || 0;
+        const CurrentRollCount = Number(await (await CloudflareUtils.GetKVRecord("CurrentRollCount")).text()) || 0;
+
         // 抽選実施
         const kickPercent = parseFloat(process.env.KICK_CHANCE_PERCENT || "0");
         const banPercent = parseFloat(process.env.BAN_CHANCE_PERCENT || "0");
@@ -152,9 +156,9 @@ const Main = async () => {
         const rollResult = "Roll result: " + roll.toString() + ", totalChance: " + totalChance.toString() + " (" + kickPercent.toString() + " + " + banPercent.toString() + ") "
         logger.info(rollResult);
         await discord.sendMessage(rollResult);
-        
+
         if (roll >= totalChance) {
-            await discord.sendMessage("Not selected in the draw.");
+            await discord.sendMessage(`Not selected in the draw. / Total: ${AllRollCount + 1} - Current: ${CurrentRollCount + 1}`);
             await vrchat.UpdateGroupPost(
                 groupId,
                 config.postTemplate.title,
@@ -162,20 +166,21 @@ const Main = async () => {
                     config.postTemplate.content.noPick.join("\n"),
                     {
                         "date": formatDate(new Date()),
-                        "player_count": groupMemberCount.toString()
+                        "player_count": groupMemberCount.toString(),
+                        "total_game_count": `${AllRollCount + 1}`,
+                        "last_hit_game_count": `${CurrentRollCount + 1}`
                     }
                 ),
                 false
             )
-            const AllRollCount = Number(await (await CloudflareUtils.GetKVRecord("AllRollCount")).text()) || 0;
             await CloudflareUtils.SetKVRecord(
-                "AllRollCount", 
+                "AllRollCount",
                 AllRollCount + 1
             );
 
-            const CurrentRollCount = Number(await (await CloudflareUtils.GetKVRecord("CurrentRollCount")).text()) || 0;
+
             await CloudflareUtils.SetKVRecord(
-                "CurrentRollCount", 
+                "CurrentRollCount",
                 CurrentRollCount + 1
             );
             return;
@@ -226,14 +231,16 @@ const Main = async () => {
                             "date": formatDate(new Date()),
                             "player_name": userInfo.displayName,
                             "joined_at": joinedAtJST,
-                            "joinDuration": joinDurationDays
+                            "join_duration": joinDurationDays,
+                            "total_game_count": `${AllRollCount + 1}`,
+                            "last_hit_game_count": `${CurrentRollCount + 1}`
                         }
                     ),
                     true
                 );
                 await vrchat.BanUser(groupId, selectedMember.userId);
-                logger.info(`Banned user: ${selectedMember.userId}`);
-                await discord.sendMessage(`Banned user: ${selectedMember.userId} (${joinedAtJST})`);
+                logger.info(`Banned user: ${selectedMember.userId} `);
+                // await discord.sendMessage(`Banned user: ${selectedMember.userId} (${joinedAtJST})`);
             } else {
                 await vrchat.UpdateGroupPost(
                     groupId,
@@ -244,14 +251,16 @@ const Main = async () => {
                             "date": formatDate(new Date()),
                             "player_name": userInfo.displayName,
                             "joined_at": joinedAtJST,
-                            "joinDuration": joinDurationDays
+                            "join_duration": joinDurationDays,
+                            "total_game_count": `${AllRollCount + 1}`,
+                            "last_hit_game_count": `${CurrentRollCount + 1}`
                         }
                     ),
                     true
                 );
                 await vrchat.KickUser(groupId, selectedMember.userId);
                 logger.info(`Kicked user: ${selectedMember.userId}`);
-                await discord.sendMessage(`Kicked user: ${selectedMember.userId} (${joinedAtJST})`);
+                // await discord.sendMessage(`Kicked user: ${selectedMember.userId} (${joinedAtJST})`);
             }
             await CloudflareUtils.InsertTargetPlayer(
                 userId,
@@ -261,16 +270,17 @@ const Main = async () => {
                 action
             );
 
-            const AllRollCount = Number(await (await CloudflareUtils.GetKVRecord("AllRollCount")).text()) || 0;
             await CloudflareUtils.SetKVRecord(
-                "AllRollCount", 
+                "AllRollCount",
                 AllRollCount + 1
             );
 
             await CloudflareUtils.SetKVRecord(
-                "CurrentRollCount", 
+                "CurrentRollCount",
                 0
             );
+
+            await discord.sendMessage(`[Hit!:${action}] ${userInfo.displayName} / - ${joinedAtJST} (${joinDurationDays}days) / Total: ${AllRollCount + 1} - Current: ${CurrentRollCount + 1}`);
         } catch (error) {
             throw error;
         }
