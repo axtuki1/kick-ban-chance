@@ -16,7 +16,7 @@
                 "今回の抽選結果はハズレとなりました。",
                 "次回の抽選もお楽しみに。",
                 "",
-                "トータル: ${total_game_count} / 前回ヒットから: ${last_hit_game_count}"
+                "トータル: {total_game_count}回 / 前回ヒットから: {last_hit_game_count}回"
             ],
             // 当たり(kick)
             "kick": [
@@ -33,7 +33,7 @@
                 "※再参加が可能です。",
                 "次回の抽選もお楽しみに。",
                 "",
-                "トータル: ${total_game_count} / 前回ヒットから: ${last_hit_game_count}"
+                "トータル: {total_game_count}回 / 前回ヒットから: {last_hit_game_count}回"
             ],
             // 当たり(ban)
             "ban": [
@@ -50,7 +50,7 @@
                 "※再参加はできません。",
                 "次回の抽選もお楽しみに。",
                 "",
-                "トータル: ${total_game_count} / 前回ヒットから: ${last_hit_game_count}"
+                "トータル: {total_game_count}回 / 前回ヒットから: {last_hit_game_count}回"
             ]
         }
     }

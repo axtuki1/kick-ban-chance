@@ -215,8 +215,8 @@ const Main = async () => {
                     // 100回試行しても見つからなかった場合は、最新のメンバーを取得
                     selectedMember = (await vrchat.GetGroupMembers(groupId, 1, 0, "joinedAt:desc"))[0];
                 }
-                logger.debug("get data:");
-                logger.debug(selectedMember);
+                // logger.debug("get data:");
+                // logger.debug(selectedMember);
                 // 除外ユーザーIDに含まれていないことを確認
                 logger.debug(`Trying to select member: ${selectedMember.userId} (Attempt ${tryCount})`);
             } while (excludeUserIds.includes(selectedMember.userId));
