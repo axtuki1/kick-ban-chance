@@ -152,7 +152,7 @@ const Main = async () => {
 
         const totalChance = kickPercent + banPercent;
 
-        if (process.env.FORCE_ACTION === "kick" || process.env.FORCE_ACTION === "ban") {
+        if (process.env.FORCE_ACTION !== "kick" && process.env.FORCE_ACTION !== "ban") {
 
             const roll = Math.random() * 100;  // 0.00 ～ 99.99
 
