@@ -151,48 +151,59 @@ const Main = async () => {
         }
 
         const totalChance = kickPercent + banPercent;
-        const roll = Math.random() * 100;  // 0.00 ～ 99.99
 
-        const rollResult = "Roll result: " + roll.toString() + ", totalChance: " + totalChance.toString() + " (" + kickPercent.toString() + " + " + banPercent.toString() + ") "
-        logger.info(rollResult);
-        await discord.sendMessage(rollResult);
+        if (process.env.FORCE_ACTION === "kick" || process.env.FORCE_ACTION === "ban") {
 
-        if (roll >= totalChance) {
-            await discord.sendMessage(`Not selected in the draw. / Total: ${AllRollCount + 1} - Current: ${CurrentRollCount + 1}`);
-            await vrchat.UpdateGroupPost(
-                groupId,
-                config.postTemplate.title,
-                replace(
-                    config.postTemplate.content.noPick.join("\n"),
-                    {
-                        "date": formatDate(new Date()),
-                        "player_count": groupMemberCount.toString(),
-                        "total_game_count": `${AllRollCount + 1}`,
-                        "last_hit_game_count": `${CurrentRollCount + 1}`
-                    }
-                ),
-                false
-            )
-            await CloudflareUtils.SetKVRecord(
-                "AllRollCount",
-                AllRollCount + 1
-            );
+            const roll = Math.random() * 100;  // 0.00 ～ 99.99
+
+            const rollResult = "Roll result: " + roll.toString() + ", totalChance: " + totalChance.toString() + " (" + kickPercent.toString() + " + " + banPercent.toString() + ") "
+            logger.info(rollResult);
+            await discord.sendMessage(rollResult);
+
+            if (roll >= totalChance) {
+                await discord.sendMessage(`Not selected in the draw. / Total: ${AllRollCount + 1} - Current: ${CurrentRollCount + 1}`);
+                await vrchat.UpdateGroupPost(
+                    groupId,
+                    config.postTemplate.title,
+                    replace(
+                        config.postTemplate.content.noPick.join("\n"),
+                        {
+                            "date": formatDate(new Date()),
+                            "player_count": groupMemberCount.toString(),
+                            "total_game_count": `${AllRollCount + 1}`,
+                            "last_hit_game_count": `${CurrentRollCount + 1}`
+                        }
+                    ),
+                    false
+                )
+                await CloudflareUtils.SetKVRecord(
+                    "AllRollCount",
+                    AllRollCount + 1
+                );
 
 
-            await CloudflareUtils.SetKVRecord(
-                "CurrentRollCount",
-                CurrentRollCount + 1
-            );
-            return;
+                await CloudflareUtils.SetKVRecord(
+                    "CurrentRollCount",
+                    CurrentRollCount + 1
+                );
+                return;
+            }
         }
 
         try {
             const banWeight = banPercent / totalChance;
             const subRoll = Math.random();
 
-            const action = subRoll < banWeight ? "ban" : "kick";
+            let action: "kick" | "ban" = "kick";
+            if (process.env.FORCE_ACTION === "kick" || process.env.FORCE_ACTION === "ban") {
+                action = process.env.FORCE_ACTION as "kick" | "ban";
+            } else {
+                if (subRoll < banWeight) {
+                    action = "ban";
+                }
 
-            logger.debug("subRoll: " + subRoll.toString() + " < banWeight: " + banWeight.toString());
+                discord.sendMessage("subRoll: " + subRoll.toString() + " < banWeight: " + banWeight.toString() + " = action: " + action);
+            }
 
             let selectedMember;
             let tryCount = 0;
@@ -204,7 +215,10 @@ const Main = async () => {
                     // 100回試行しても見つからなかった場合は、最新のメンバーを取得
                     selectedMember = await vrchat.GetGroupMembers(groupId, 1, 0, "joinedAt:desc")[0];
                 }
+                logger.debug("get data:");
+                logger.debug(selectedMember);
                 // 除外ユーザーIDに含まれていないことを確認
+                logger.debug(`Trying to select member: ${selectedMember.userId} (Attempt ${tryCount})`);
             } while (excludeUserIds.includes(selectedMember.userId));
             logger.info(`Selected member: ${selectedMember.userId} for action: ${action}`);
 
@@ -288,6 +302,7 @@ const Main = async () => {
     } catch (error) {
         logger.error("An error occurred: " + error);
         await discord.sendMessage("An error occurred: " + error);
+        console.error(error);
     }
 
 }
