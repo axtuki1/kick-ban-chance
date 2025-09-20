@@ -54,6 +54,9 @@ export class Logger {
                 console.log(sender + "%f", obj);
             }
             Logger.printFile(this.sender, sender + obj.toString());
+        } else if(typeof obj === undefined) {
+            console.log(sender + "%s", "undefined");
+            Logger.printFile(this.sender, sender + "undefined");
         } else {
             console.log(sender + "%o", JSON.parse(JSON.stringify(obj)));
             Logger.printFile(this.sender, sender + JSON.stringify(obj));

@@ -366,6 +366,8 @@ export class VRChat {
                 headers: this.GetRequestHeader()
             });
 
+            this.logger.debug("Response Status: " + response.status);
+
             if (response.status === 200) {
                 return response.json();
             }
