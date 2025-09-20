@@ -209,11 +209,11 @@ const Main = async () => {
             let tryCount = 0;
             do {
                 // グループメンバーからランダムに1人選ぶ
-                selectedMember = await vrchat.GetGroupMembers(groupId, 1, Math.floor(Math.random() * groupInfo.memberCount), "joinedAt:asc")[0];
+                selectedMember = (await vrchat.GetGroupMembers(groupId, 1, Math.floor(Math.random() * groupInfo.memberCount), "joinedAt:asc"))[0];
                 tryCount++;
                 if (tryCount > 100) {
                     // 100回試行しても見つからなかった場合は、最新のメンバーを取得
-                    selectedMember = await vrchat.GetGroupMembers(groupId, 1, 0, "joinedAt:desc")[0];
+                    selectedMember = (await vrchat.GetGroupMembers(groupId, 1, 0, "joinedAt:desc"))[0];
                 }
                 logger.debug("get data:");
                 logger.debug(selectedMember);
