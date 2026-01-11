@@ -190,6 +190,9 @@ const Main = async () => {
             }
         }
 
+        const kickCount = Number(await (await CloudflareUtils.GetKVRecord("KickCount")).text()) || 0;
+        const banCount = Number(await (await CloudflareUtils.GetKVRecord("BanCount")).text()) || 0;
+
         try {
             const banWeight = banPercent / totalChance;
             const subRoll = Math.random();
@@ -254,6 +257,10 @@ const Main = async () => {
                 );
                 await vrchat.BanUser(groupId, selectedMember.userId);
                 logger.info(`Banned user: ${selectedMember.userId} `);
+                await CloudflareUtils.SetKVRecord(
+                    "BanCount",
+                    banCount + 1
+                );
                 // await discord.sendMessage(`Banned user: ${selectedMember.userId} (${joinedAtJST})`);
             } else {
                 await vrchat.UpdateGroupPost(
@@ -274,6 +281,10 @@ const Main = async () => {
                 );
                 await vrchat.KickUser(groupId, selectedMember.userId);
                 logger.info(`Kicked user: ${selectedMember.userId}`);
+                await CloudflareUtils.SetKVRecord(
+                    "KickCount",
+                    kickCount + 1
+                );
                 // await discord.sendMessage(`Kicked user: ${selectedMember.userId} (${joinedAtJST})`);
             }
             await CloudflareUtils.InsertTargetPlayer(
@@ -281,7 +292,8 @@ const Main = async () => {
                 userInfo.displayName,
                 selectedMember.joinedAt,
                 joinDurationDays,
-                action
+                action,
+                CurrentRollCount + 1
             );
 
             await CloudflareUtils.SetKVRecord(

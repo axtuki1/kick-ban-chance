@@ -7,7 +7,7 @@ import uuid from "ui7";
  * 一旦Staticでおちゃにごし
  */
 export class CloudflareUtils {
-    public static async InsertTargetPlayer(playerId, playerName, joinDate, joinDuration, action) {
+    public static async InsertTargetPlayer(playerId, playerName, joinDate, joinDuration, action, startCount) {
         let logger = new Logger("Cloudflare");
         try {
             const client = new Cloudflare({
@@ -17,7 +17,7 @@ export class CloudflareUtils {
                 process.env.CLOUDFLARE_DATABASE_ID,
                 {
                     account_id: process.env.CLOUDFLARE_ACCOUNT_ID,
-                    sql: `INSERT INTO history (uuid, date, playerId, displayName, joinDate, joinDuration, action) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                    sql: `INSERT INTO history (uuid, date, playerId, displayName, joinDate, joinDuration, action, startCount) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                     params: [
                         uuid(),
                         new Date().toISOString(),
@@ -25,7 +25,8 @@ export class CloudflareUtils {
                         playerName,
                         joinDate,
                         joinDuration,
-                        action
+                        action,
+                        startCount
                     ]
                 }
             );
