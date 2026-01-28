@@ -404,7 +404,7 @@ export class VRChat {
         }
     }
 
-    public async CreateGroupPost(groupid: string, title: string, content: string, isNotice: boolean = false, roleIds: string[] = [], visibility: "group" | "public" = "group") {
+    public async CreateGroupPost(groupid: string, title: string, content: string, isNotice: boolean = false, roleIds: string[] = [], visibility: "group" | "public" = "group", imageId: string = null) {
         try {
             this.logger.debug("Creating group post");
             const url = "https://api.vrchat.cloud/api/1/groups/<groupId>/posts".replace("<groupId>", groupid);
@@ -415,7 +415,7 @@ export class VRChat {
                 body: JSON.stringify({
                     title: title,
                     text: content,
-                    imageId: null,
+                    imageId: imageId,
                     sendNotification: isNotice,
                     roleIds: roleIds,
                     visibility: visibility
@@ -454,7 +454,7 @@ export class VRChat {
         }
     }
 
-    public async UpdateGroupPost(groupid: string, title: string, content: string, isNotice: boolean = false, roleIds: string[] = [], visibility: "group" | "public" = "group") {
+    public async UpdateGroupPost(groupid: string, title: string, content: string, isNotice: boolean = false, roleIds: string[] = [], visibility: "group" | "public" = "group", imageId: string = null) {
         let response;
         try {
             this.logger.debug("Updating group post");
@@ -465,7 +465,7 @@ export class VRChat {
                 await this.DeleteGroupPost(groupid, post.id);
             });
             
-            await this.CreateGroupPost(groupid, title, content, isNotice, roleIds, visibility);
+            await this.CreateGroupPost(groupid, title, content, isNotice, roleIds, visibility, imageId);
 
         } catch (e) {
             throw new Error("update failed: " + e);

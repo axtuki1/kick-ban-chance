@@ -18,6 +18,114 @@
                 "",
                 "トータル: {total_game_count}回 / 前回ヒットから: {last_hit_game_count}回"
             ],
+            // ハズレ(ストーリー投稿)
+            "noPickWithTimeline": [
+                // バリエーション1 (救済パターン)
+                [
+                    {
+                        "imageId": null,
+                        "text": [
+                            "{date}の抽選を行いました。",
+                            "",
+                            "【結果】",
+                            "KICK",
+                            "",
+                            "【対象者】",
+                            "{player_name}",
+                            "参加日時: {joined_at}（{join_duration}日間）",
+                            "",
+                            "今回の抽選結果は{noise_string}となりました。",
+                            "次{noise_string}選もお楽し{noise_string}に。",
+                            "",
+                            "トータル: {noise_string}回 / 前回ヒットから: {noise_string}回"
+                        ]
+                    },
+                    {
+                        "imageId": null,
+                        "text": [
+                            "「その抽選、待ったぁーーーーー！！！！」"
+                        ]
+                    },
+                    {
+                        "imageId": null,
+                        "text": [
+                            "「{player_name}さん！今日は私に任せて！」",
+                            "",
+                            "【結果】",
+                            "KICK ＞＞ 執行なし",
+                            "",
+                            "【対象者】",
+                            "{player_name} ＞＞ [取消]",
+                            "",
+                            "今回の抽選結果はハズレとなりました。",
+                            "次回の抽選もお楽しみに。",
+                            "",
+                            "トータル: {total_game_count}回 / 前回ヒットから: {last_hit_game_count}回"
+                        ]
+                    }
+                ],
+                // バリエーション2
+                [
+                    {
+                        "imageId": null,
+                        "text": [
+                            "{date}の抽選を行いました。",
+                            "",
+                            "【結果】",
+                            "BAN",
+                            "",
+                            "【対象者】",
+                            "{player_name}",
+                            "参加日時: {joined_at}（{join_duration}日間）",
+                            "",
+                            "今回の抽選結果は{noise_string}となりました。",
+                            "次{noise_string}選もお楽し{noise_string}に。",
+                            "",
+                            "トータル: {noise_string}回 / 前回ヒットから: {noise_string}回"
+                        ]
+                    },
+                    {
+                        "imageId": null,
+                        "text": [
+                            "「ちょっと待ったぁーーーーー！！！！」"
+                        ]
+                    },
+                    {
+                        "imageId": null,
+                        "text": [
+                            "「{player_name}さんの永久追放なんて認めないんだからぁ！！」",
+                            "",
+                            "【結果】",
+                            "BAN ＞＞ 執行なし",
+                            "",
+                            "【対象者】",
+                            "{player_name} ＞＞ [取消]",
+                            "",
+                            "今回の抽選結果はハズレとなりました。",
+                            "次回の抽選もお楽しみに。",
+                            "",
+                            "トータル: {total_game_count}回 / 前回ヒットから: {last_hit_game_count}回"
+                        ]
+                    }
+                ],
+                // バリエーション3
+                [
+                    {
+                        "imageId": null,
+                        "text": [
+                            "{date}の抽選を行いました。",
+                            "",
+                            "【結果】",
+                            "うーん、残念！はずれ！",
+                            "",
+                            "今回の抽選結果はハズレとなりました。",
+                            "次回の抽選もお楽しみに。",
+                            "",
+                            "トータル: {total_game_count}回 / 前回ヒットから: {last_hit_game_count}回"
+                        ]
+                    }
+                ]
+            ],
             // 当たり(kick)
             "kick": [
                 "{date}の抽選を行いました。",
@@ -34,6 +142,94 @@
                 "次回の抽選もお楽しみに。",
                 "",
                 "トータル: {total_game_count}回 / 前回ヒットから: {last_hit_game_count}回"
+            ],
+            "kickWithTimeline": [
+                // バリエーション1
+                [
+                    {
+                        "imageId": null,
+                        "text": [
+                            "{date}の抽選を行いました。",
+                            "",
+                            "【結果】",
+                            "はっずれー",
+                            "",
+                            "今回の抽選結果はハズレとなりました。",
+                            "次回の抽選もお楽しみに。",
+                            "",
+                            "トータル: {total_game_count}回 / 前回ヒットから: {last_hit_game_count}回"
+                        ]
+                    },
+                    {
+                        "imageId": null,
+                        "text": [
+                            "「ん～～～.......」"
+                        ]
+                    },
+                    {
+                        "imageId": null,
+                        "text": [
+                            "「やっぱやーめた 今日はお前だーーー！！！」",
+                            "",
+                            "【結果】",
+                            "執行なし ＞＞ Kick",
+                            "",
+                            "【対象者】",
+                            "なし ＞＞ {player_name}",
+                            "",
+                            "今回の抽選結果はKickとなりました。",
+                            "※再参加が可能です。",
+                            "次回の抽選もお楽しみに。",
+                            "",
+                            "トータル: {total_game_count}回 / 前回ヒットから: {last_hit_game_count}回"
+                        ]
+                    }
+                ],
+                // バリエーション2
+                [
+                    {
+                        "imageId": null,
+                        "text": [
+                            "{date}の抽選を行いました。",
+                            "",
+                            "【結果】",
+                            "KICK",
+                            "",
+                            "【対象者】",
+                            "{player_name}",
+                            "参加日時: {joined_at}（{join_duration}日間）",
+                            "",
+                            "今回の抽選結果は{noise_string}となりました。",
+                            "次{noise_string}選もお楽し{noise_string}に。",
+                            "",
+                            "トータル: {noise_string}回 / 前回ヒットから: {noise_string}回"
+                        ]
+                    },
+                    {
+                        "imageId": null,
+                        "text": [
+                            "「その抽選、待ったぁーーーーー！！！！」"
+                        ]
+                    },
+                    {
+                        "imageId": null,
+                        "text": [
+                            "「あ、やっぱなんでもないw」",
+                            "",
+                            "【結果】",
+                            "Kick",
+                            "",
+                            "【対象者】",
+                            "{player_name}",
+                            "",
+                            "今回の抽選結果はKickとなりました。",
+                            "※再参加が可能です。",
+                            "次回の抽選もお楽しみに。",
+                            "",
+                            "トータル: {total_game_count}回 / 前回ヒットから: {last_hit_game_count}回"
+                        ]
+                    }
+                ]
             ],
             // 当たり(ban)
             "ban": [

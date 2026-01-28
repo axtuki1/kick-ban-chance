@@ -1,6 +1,5 @@
 import * as fs from "fs";
 import { Msg } from "./util/msg";
-import * as OTPAuth from "otpauth";
 import { Logger, Level } from "./util/logger";
 import { VRChat } from "./vrchat";
 import { Discord } from "./discord";
@@ -18,6 +17,46 @@ const replace = (str: string, data: Record<string, string>): string => {
         return data[key] || match;
     }
     );
+}
+
+const rndStr = ((len = 4) => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$%^&*_-";
+    let s = "";
+    for (let i = 0; i < len; i++) {
+        s += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return s;
+});
+
+const pickRndPlayer = async (vrchat: VRChat, groupId: string, groupInfo: any, excludeUserIds: string[]) => {
+    const logger = new Logger("PickRndPlayer");
+    let selectedMember;
+    let tryCount = 0;
+    do {
+        // グループメンバーからランダムに1人選ぶ
+        selectedMember = (await vrchat.GetGroupMembers(groupId, 1, Math.floor(Math.random() * groupInfo.memberCount), "joinedAt:asc"))[0];
+        tryCount++;
+        if (tryCount > 100) {
+            // 100回試行しても見つからなかった場合は、最新のメンバーを取得
+            selectedMember = (await vrchat.GetGroupMembers(groupId, 1, 0, "joinedAt:desc"))[0];
+            break;
+        }
+        // logger.debug("get data:");
+        // logger.debug(selectedMember);
+        // 除外ユーザーIDに含まれていないことを確認
+        logger.debug(`Trying to select member: ${selectedMember.userId} (Attempt ${tryCount})`);
+    } while (excludeUserIds.includes(selectedMember.userId));
+    if(excludeUserIds.includes(selectedMember.userId)) {
+        throw new Error("Failed to select a valid member after 100 attempts.");
+    }
+    return selectedMember;
+}
+
+const wait = (range1Ms, range2Ms = range1Ms) => {
+    const max = Math.max(range1Ms, range2Ms);
+    const min = Math.min(range1Ms, range2Ms);
+    const waitTime = Math.floor(Math.random() * (max - min + 1)) + min;
+    return new Promise((resolve) => setTimeout(resolve, waitTime));
 }
 
 // Date型を"YYYY年MM月D日"形式の文字列に変換する関数
@@ -79,7 +118,7 @@ const Main = async () => {
 
     if (!vrchat.isLogin) {
         logger.info("Login failed...");
-
+        throw new Error("Login failed");
     } else {
         logger.info("Login Success!");
     }
@@ -152,6 +191,11 @@ const Main = async () => {
 
         const totalChance = kickPercent + banPercent;
 
+        if( totalChance <= 0 ) {
+            throw new Error("Total chance of kick and ban must be greater than 0.");
+        }
+
+        // 抽選処理
         if (process.env.FORCE_ACTION !== "kick" && process.env.FORCE_ACTION !== "ban") {
 
             const roll = Math.random() * 100;  // 0.00 ～ 99.99
@@ -161,26 +205,78 @@ const Main = async () => {
             await discord.sendMessage(rollResult);
 
             if (roll >= totalChance) {
-                await discord.sendMessage(`Not selected in the draw. / Total: ${AllRollCount + 1} - Current: ${CurrentRollCount + 1}`);
-                await vrchat.UpdateGroupPost(
-                    groupId,
-                    config.postTemplate.title,
-                    replace(
-                        config.postTemplate.content.noPick.join("\n"),
-                        {
-                            "date": formatDate(new Date()),
-                            "player_count": groupMemberCount.toString(),
-                            "total_game_count": `${AllRollCount + 1}`,
-                            "last_hit_game_count": `${CurrentRollCount + 1}`
-                        }
-                    ),
-                    false
-                )
+                // ハズレ演出抽選
+                const effectRoll = Math.random() * 100;  // 0.00 ～ 99.99
+                if (effectRoll < 10) { // 10%の確率でストーリー投稿パターンを選択
+
+                    // ドキドキさせる対象者の名前をランダムに選ぶ
+                    const selectedMember = await pickRndPlayer(vrchat, groupId, groupInfo, excludeUserIds);
+
+                    // ユーザー情報の取得
+                    const userInfo = await vrchat.GetUserInfo(selectedMember.userId);
+                    logger.info(`Selected user info: ${userInfo.displayName}`);
+
+                    const joinDuration = new Date().getTime() - new Date(selectedMember.joinedAt).getTime();
+
+                    // 日数(小数点以下2桁)に変換
+                    const joinDurationDays = (joinDuration / (1000 * 60 * 60 * 24)).toFixed(2);
+
+                    // JSTに変換
+                    const joinedAtJST = formatDate(new Date(selectedMember.joinedAt));
+
+                    const noPickWithTimelineVariants = config.postTemplate.content.noPickWithTimeline;
+                    const variantIndex = Math.floor(Math.random() * noPickWithTimelineVariants.length);
+                    const selectedVariant = noPickWithTimelineVariants[variantIndex];
+
+                    await discord.sendMessage(`Not selected in the draw. (with timeline story) / Total: ${AllRollCount + 1} - Current: ${CurrentRollCount + 1}`);
+
+                    for (const data of selectedVariant) {
+                        await vrchat.UpdateGroupPost(
+                            groupId,
+                            config.postTemplate.title,
+                            replace(
+                                data.text,
+                                {
+                                    "date": formatDate(new Date()),
+                                    "player_count": groupMemberCount.toString(),
+                                    "total_game_count": `${AllRollCount + 1}`,
+                                    "last_hit_game_count": `${CurrentRollCount + 1}`,
+                                    "player_name": userInfo.displayName,
+                                    "joined_at": joinedAtJST,
+                                    "join_duration": joinDurationDays,
+                                    "noise_string": rndStr(4)
+                                }
+                            ),
+                            true,
+                            [],
+                            "group",
+                            data.imageId || null
+                        );
+                        await wait(5000, 7500);
+                    }
+
+                } else {
+                    await discord.sendMessage(`Not selected in the draw. / Total: ${AllRollCount + 1} - Current: ${CurrentRollCount + 1}`);
+                    await vrchat.UpdateGroupPost(
+                        groupId,
+                        config.postTemplate.title,
+                        replace(
+                            config.postTemplate.content.noPick.join("\n"),
+                            {
+                                "date": formatDate(new Date()),
+                                "player_count": groupMemberCount.toString(),
+                                "total_game_count": `${AllRollCount + 1}`,
+                                "last_hit_game_count": `${CurrentRollCount + 1}`,
+                                "noise_string": rndStr(5)
+                            }
+                        ),
+                        false
+                    )
+                }
                 await CloudflareUtils.SetKVRecord(
                     "AllRollCount",
                     AllRollCount + 1
                 );
-
 
                 await CloudflareUtils.SetKVRecord(
                     "CurrentRollCount",
@@ -208,21 +304,7 @@ const Main = async () => {
                 discord.sendMessage("subRoll: " + subRoll.toString() + " < banWeight: " + banWeight.toString() + " = action: " + action);
             }
 
-            let selectedMember;
-            let tryCount = 0;
-            do {
-                // グループメンバーからランダムに1人選ぶ
-                selectedMember = (await vrchat.GetGroupMembers(groupId, 1, Math.floor(Math.random() * groupInfo.memberCount), "joinedAt:asc"))[0];
-                tryCount++;
-                if (tryCount > 100) {
-                    // 100回試行しても見つからなかった場合は、最新のメンバーを取得
-                    selectedMember = (await vrchat.GetGroupMembers(groupId, 1, 0, "joinedAt:desc"))[0];
-                }
-                // logger.debug("get data:");
-                // logger.debug(selectedMember);
-                // 除外ユーザーIDに含まれていないことを確認
-                logger.debug(`Trying to select member: ${selectedMember.userId} (Attempt ${tryCount})`);
-            } while (excludeUserIds.includes(selectedMember.userId));
+            const selectedMember = await pickRndPlayer(vrchat, groupId, groupInfo, excludeUserIds);
             logger.info(`Selected member: ${selectedMember.userId} for action: ${action}`);
 
             const joinDuration = new Date().getTime() - new Date(selectedMember.joinedAt).getTime();
@@ -263,22 +345,56 @@ const Main = async () => {
                 );
                 // await discord.sendMessage(`Banned user: ${selectedMember.userId} (${joinedAtJST})`);
             } else {
-                await vrchat.UpdateGroupPost(
-                    groupId,
-                    config.postTemplate.title,
-                    replace(
-                        config.postTemplate.content.kick.join("\n"),
-                        {
-                            "date": formatDate(new Date()),
-                            "player_name": userInfo.displayName,
-                            "joined_at": joinedAtJST,
-                            "join_duration": joinDurationDays,
-                            "total_game_count": `${AllRollCount + 1}`,
-                            "last_hit_game_count": `${CurrentRollCount + 1}`
-                        }
-                    ),
-                    true
-                );
+
+                const effectRoll = Math.random() * 100;  // 0.00 ～ 99.99
+                if (effectRoll < 20 && process.env.FORCE_ACTION !== "kick") {
+                    // 20%の確率でキック前演出投稿パターンを選択
+
+                    const kickBeforeVariants = config.postTemplate.content.kickBefore;
+                    const variantIndex = Math.floor(Math.random() * kickBeforeVariants.length);
+                    const selectedVariant = kickBeforeVariants[variantIndex];
+
+                    for (const data of selectedVariant) {
+                        await vrchat.UpdateGroupPost(
+                            groupId,
+                            config.postTemplate.title,
+                            replace(
+                                data.text,
+                                {
+                                    "date": formatDate(new Date()),
+                                    "player_name": userInfo.displayName,
+                                    "joined_at": joinedAtJST,
+                                    "join_duration": joinDurationDays,
+                                    "total_game_count": `${AllRollCount + 1}`,
+                                    "last_hit_game_count": `${CurrentRollCount + 1}`
+                                }
+                            ),
+                            true,
+                            [],
+                            "group",
+                            data.imageId || null
+                        );
+                        await wait(5000, 7500);
+                    }
+                } else {
+                    await vrchat.UpdateGroupPost(
+                        groupId,
+                        config.postTemplate.title,
+                        replace(
+                            config.postTemplate.content.kick.join("\n"),
+                            {
+                                "date": formatDate(new Date()),
+                                "player_name": userInfo.displayName,
+                                "joined_at": joinedAtJST,
+                                "join_duration": joinDurationDays,
+                                "total_game_count": `${AllRollCount + 1}`,
+                                "last_hit_game_count": `${CurrentRollCount + 1}`
+                            }
+                        ),
+                        true
+                    );
+                }
+
                 await vrchat.KickUser(groupId, selectedMember.userId);
                 logger.info(`Kicked user: ${selectedMember.userId}`);
                 await CloudflareUtils.SetKVRecord(
