@@ -423,7 +423,8 @@ const Main = async () => {
                 selectedMember.joinedAt,
                 joinDurationDays,
                 action,
-                CurrentRollCount + 1
+                CurrentRollCount + 1,
+                groupMemberCount
             );
 
             await CloudflareUtils.SetKVRecord(
