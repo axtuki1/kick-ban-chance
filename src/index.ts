@@ -195,6 +195,16 @@ const Main = async () => {
             throw new Error("Total chance of kick and ban must be greater than 0.");
         }
 
+        // ストーリーモード関連
+        const enableStoryMode = (process.env.ENABLE_STORY_MODE || "false").toLowerCase() === "true";
+        const storyModeChancePercent = parseFloat(process.env.STORY_MODE_CHANCE_PERCENT || "0");
+
+        if(enableStoryMode) {
+            logger.info("Story Mode is ENABLED. Chance Percent: " + storyModeChancePercent.toString());
+        } else {
+            logger.info("Story Mode is DISABLED.");
+        }
+
         // 抽選処理
         if (process.env.FORCE_ACTION !== "kick" && process.env.FORCE_ACTION !== "ban") {
 
@@ -207,7 +217,7 @@ const Main = async () => {
             if (roll >= totalChance) {
                 // ハズレ演出抽選
                 const effectRoll = Math.random() * 100;  // 0.00 ～ 99.99
-                if (effectRoll < 10) { // 10%の確率でストーリー投稿パターンを選択
+                if (effectRoll < storyModeChancePercent && enableStoryMode) { // 10%の確率でストーリー投稿パターンを選択
 
                     // ドキドキさせる対象者の名前をランダムに選ぶ
                     const selectedMember = await pickRndPlayer(vrchat, groupId, groupInfo, excludeUserIds);
@@ -347,7 +357,11 @@ const Main = async () => {
             } else {
 
                 const effectRoll = Math.random() * 100;  // 0.00 ～ 99.99
-                if (effectRoll < 20 && process.env.FORCE_ACTION !== "kick") {
+                if (
+                    effectRoll < storyModeChancePercent &&
+                    enableStoryMode &&
+                    process.env.FORCE_ACTION !== "kick"
+                ) {
                     // 20%の確率でキック前演出投稿パターンを選択
 
                     const kickBeforeVariants = config.postTemplate.content.kickBefore;
